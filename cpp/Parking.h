@@ -15,15 +15,25 @@ private:
   cv::Rect bounding_rect;  // pre-calculated bounding_rect, to cut the ROI
   bool occupied;
   cv::Mat mask;  // mask of polygon in bounding_rect coordinates
+  cv::Point webPoint;
   int angle;
+
 public:
+
   Parking();
+
   void setStatus(bool status);
   bool getStatus(void);
+
   void setId(int n);
   int getId(void);
+
   void setPoints(vector<cv::Point> points);
+  void setWebPoint(cv::Point point);
+  cv::Point getWebPoint();
   void setAngle(int angle);
+  int getAngle();
+
   vector<vector<cv::Point>> getContourPoints(void);
   void calcBoundingRect(void);
   cv::Rect getBoundingRect(void);

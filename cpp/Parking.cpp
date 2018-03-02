@@ -40,6 +40,21 @@ void Parking::setAngle(int a)
   angle = a;
 }
 
+int Parking::getAngle()
+{
+  return angle;
+}
+
+void Parking::setWebPoint(cv::Point point)
+{
+  webPoint = point;
+}
+
+cv::Point Parking::getWebPoint()
+{
+  return webPoint;
+}
+
 vector<vector<cv::Point>> Parking::getContourPoints(void)
 {
   return contours_points;

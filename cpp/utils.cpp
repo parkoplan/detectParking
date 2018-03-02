@@ -26,11 +26,9 @@ vector<Parking> parse_parking_file(string filename) {
     points.push_back(cv::Point(x3, y3));
     points.push_back(cv::Point(x4, y4));
 
-    // Coordinates for 2D map
-    points.push_back(cv::Point(xw, yw));
-
     park.setId(id);
     park.setPoints(points);
+    park.setWebPoint(cv::Point(xw, yw));
     park.setAngle(ya);
     park.calcBoundingRect();
 

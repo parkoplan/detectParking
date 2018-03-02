@@ -22,7 +22,6 @@ int main(int argc, char** argv)
   //Load configs
   ConfigLoad::parse();
 
-
   const string videoFilename = argv[1];
   vector<Parking> parking_data = parse_parking_file(argv[2]);
   const int delay = 1;
@@ -54,7 +53,10 @@ int main(int argc, char** argv)
   {
     string::size_type pAt = videoFilename.find_last_of('.');                  // Find extension point
     const string videoOutFilename = videoFilename.substr(0, pAt) + "_out.avi";   // Form the new name with container
-    int ex = static_cast<int>(cap.get(cv::CAP_PROP_FOURCC));     // Get Codec Type- Int form
+
+    //unused?
+    //int ex = static_cast<int>(cap.get(cv::CAP_PROP_FOURCC));     // Get Codec Type- Int form
+
     //cv::VideoWriter::CV_FOURCC('C', 'R', 'A', 'M');
     outputVideo.open(videoOutFilename, -1, cap.get(cv::CAP_PROP_FPS), videoSize, true);
   }
@@ -76,7 +78,10 @@ int main(int argc, char** argv)
       printf("Error reading frame\n");
       return -1;
     }
-    double video_pos_msec = cap.get(cv::CAP_PROP_POS_MSEC);
+
+    // unused?
+    //double video_pos_msec = cap.get(cv::CAP_PROP_POS_MSEC);
+
     double video_pos_frame = cap.get(cv::CAP_PROP_POS_FRAMES);
 
     frame_out = frame.clone();
