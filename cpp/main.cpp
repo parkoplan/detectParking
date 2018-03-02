@@ -71,13 +71,23 @@ int main(int argc, char** argv)
 
   // Open Camera or Video	File
   cv::VideoCapture cap;
-  if ( videoFilename == "0" || videoFilename == "1" || videoFilename == "2"
-    || videoFilename.find("http") != std::string::npos)
+
+  bool http = videoFilename.find("http") != string::npos;
+
+  if ( videoFilename == "0" || videoFilename == "1" || videoFilename == "2" || http)
   {
-    printf("Loading Connected Camera...\n");
-    if (!cap.open(stoi(videoFilename))) {
-      std::cout << "Error opening video stream or file" << std::endl;
-      return -1;
+    if (http) {
+      cout << "Loading IP/htttp camera" << endl;
+      if (!cap.open(videoFilename)) {
+        cout << "Error opening http caamera" << endl;
+        return -1;
+      }
+    } else {
+      cout << "Loading Connected Camera..." << endl;
+      if (!cap.open(stoi(videoFilename))) {
+        cout << "Error opening caamera" << endl;
+        return -1;
+      }
     }
     cv::waitKey(500);
   }
