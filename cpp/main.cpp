@@ -2,16 +2,18 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+
 #include <opencv2/opencv.hpp>
+
 #include "Parking.h"
 #include "utils.h"
 #include "ConfigLoad.h"
 
 using namespace std;
 
-void fillParkingWithCars(std::vector<cv::Rect>& cars)
+void fillParkingWithCars(vector<cv::Rect>& cars)
 {
-  ofstream outputFile("parkinglot_new.txt", std::ofstream::out | std::ofstream::trunc);
+  ofstream outputFile("parkinglot_new.txt", ofstream::out | ofstream::trunc);
   int i = 0;
   for (auto car : cars) {
     outputFile << i++ << " " 
@@ -33,7 +35,7 @@ void detectAndDisplay(cv::Mat frame)
   cv::CascadeClassifier cars_cascade; 
   cars_cascade.load("datasets/haarcascades/cars.xml");
 
-  std::vector<cv::Rect> cars;
+  vector<cv::Rect> cars;
   cv::Mat frame_gray;
   cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
   equalizeHist(frame_gray, frame_gray);
@@ -72,35 +74,27 @@ int main(int argc, char** argv)
   // Open Camera or Video	File
   cv::VideoCapture cap;
 
-  bool http = videoFilename.find("http") != string::npos;
-
-  if ( videoFilename == "0" || videoFilename == "1" || videoFilename == "2" || http)
+  if ( videoFilename == "0" || videoFilename == "1" || videoFilename == "2")
   {
-    if (http) {
-      cout << "Loading IP/htttp camera" << endl;
-      if (!cap.open(videoFilename)) {
-        cout << "Error opening http caamera" << endl;
-        return -1;
-      }
-    } else {
-      cout << "Loading Connected Camera..." << endl;
-      if (!cap.open(stoi(videoFilename))) {
-        cout << "Error opening caamera" << endl;
-        return -1;
-      }
+    cout << "Loading Connected Camera..." << endl;
+    if (!cap.open(stoi(videoFilename))) {
+      cout << "Error opening camera" << endl;
+      return -1;
     }
     cv::waitKey(500);
   }
   else
   {
     cap.open(videoFilename);
+    //not sure what that commented code is all about
     //cap.set(cv::CAP_PROP_POS_FRAMES, 60000); // jump to frame
   }
   if (!cap.isOpened())
   {
-    cout << "Could not open: " << videoFilename << endl;
+    cout << "Could not open http or file stream: " << videoFilename << endl;
     return -1;
   }
+
   const unsigned long int total_frames = cap.get(cv::CAP_PROP_FRAME_COUNT);
   cv::Size videoSize = cv::Size((int)cap.get(cv::CAP_PROP_FRAME_WIDTH),    // Acquire input size
     (int)cap.get(cv::CAP_PROP_FRAME_HEIGHT));
@@ -147,8 +141,7 @@ int main(int argc, char** argv)
       cv::cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
       cv::GaussianBlur(frame_gray, frame_blur, blur_kernel, 3, 3);
 
-      cout << ConfigLoad::options["DETECT_PARKING"];
-      printf("\n");
+      cout << ConfigLoad::options["DETECT_PARKING"] << endl;
 
       if (ConfigLoad::options["DETECT_PARKING"] == "true")
       {
@@ -167,8 +160,9 @@ int main(int argc, char** argv)
       // Parking Overlay
       for (Parking park : parking_data)
       {
-        if (park.getStatus())  color = cv::Scalar(0, 255, 0);
-        else color = cv::Scalar(0, 0, 255);
+        color = (park.getStatus())
+            ? cv::Scalar(0, 255, 0)
+            : cv::Scalar(0, 0, 255);
         cv::drawContours(frame_out, park.getContourPoints(), -1, color, 2, cv::LINE_AA);
 
         // Parking ID overlay
@@ -183,7 +177,8 @@ int main(int argc, char** argv)
       double time = clock();
       if (lastUpdateTime == 0 || time - lastUpdateTime > 1000) {
         lastUpdateTime = time;
-        ofstream outputFile("parking.txt", std::ofstream::out | std::ofstream::trunc);
+        // deploy parking status every second?
+        ofstream outputFile("parking.txt", ofstream::out | ofstream::trunc);
         for (Parking park : parking_data) {
           outputFile << park.getId() << " " << park.getStatus() << endl;
         }
@@ -193,7 +188,8 @@ int main(int argc, char** argv)
       // Text Overlay
       oss.str("");
       oss << (unsigned long int)video_pos_frame << "/" << total_frames;
-      cv::putText(frame_out, oss.str(), cv::Point(5, 30), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(0, 255, 255), 2, cv::LINE_AA);
+      cv::putText(frame_out, oss.str(), cv::Point(5, 30), cv::FONT_HERSHEY_SIMPLEX
+                                      , 0.7, cv::Scalar(0, 255, 255), 2, cv::LINE_AA);
 
       // Save Video
       if (ConfigLoad::options["SAVE_VIDEO"] == "true")
@@ -205,6 +201,8 @@ int main(int argc, char** argv)
 
     // Show Video
     c = (char)cv::waitKey(delay);
+
+    // escape actually
     if (c == 27) break;
   }
 

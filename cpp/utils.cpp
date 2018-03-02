@@ -6,6 +6,7 @@
 // *   id x1 y1 x2 y2 x3 y3 x4 y4
 // *******************************************************
 vector<Parking> parse_parking_file(string filename) {
+
   fstream infile(filename);
   string line;
   vector<Parking> parkings;

@@ -1,7 +1,9 @@
 #pragma once
+
 #include <string>
 #include <sstream>
 #include <fstream>
+
 #include <opencv2/opencv.hpp>
 
 using namespace std;
@@ -9,6 +11,7 @@ using namespace std;
 class Parking
 {
 private:
+
   int id;
   vector<vector<cv::Point>> contours_points;
   vector<cv::Point> polygon_points_in_bounding_rect;

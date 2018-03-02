@@ -1,7 +1,5 @@
 #include "Parking.h"
 
-
-
 Parking::Parking()
 {
   id = -1;

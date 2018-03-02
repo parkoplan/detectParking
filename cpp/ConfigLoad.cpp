@@ -1,15 +1,13 @@
 #include "ConfigLoad.h"
-#include <map>
+
 #include <sstream>
 #include <stdexcept>
-#include <string>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <functional>
 #include <cctype>
 #include <locale>
-
 
 using namespace std;
 
@@ -28,7 +26,6 @@ string ConfigLoad::trim(const string& str)
 
 void ConfigLoad::parse()
 {
-
   ifstream cfgfile("config.cfg");
 
   string line;
