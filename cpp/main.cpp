@@ -68,6 +68,7 @@ int main(int argc, char** argv)
   ostringstream oss;
   cv::Size blur_kernel = cv::Size(5, 5);
   cv::namedWindow("Video", cv::WINDOW_AUTOSIZE);
+  double lastUpdateTime = 0;
 
   // Loop through Video
   while (cap.isOpened())
@@ -120,6 +121,17 @@ int main(int argc, char** argv)
       cv::putText(frame_out, to_string(park.getId()), cv::Point(p.x + 1, p.y - 1), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
       cv::putText(frame_out, to_string(park.getId()), p, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
     }
+    
+    double time = clock();
+    if (lastUpdateTime == 0 || time - lastUpdateTime > 1000) {
+      lastUpdateTime = time;
+      ofstream outputFile("parking.txt", std::ofstream::out | std::ofstream::trunc);
+      for (Parking park : parking_data) { 
+        outputFile << park.getId() << " " << park.getStatus() << endl;
+      }
+      outputFile.close();
+    }
+
     // Text Overlay
     oss.str("");
     oss << (unsigned long int)video_pos_frame << "/" << total_frames;
