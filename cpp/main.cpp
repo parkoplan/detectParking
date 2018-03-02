@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 
 
   const string videoFilename = argv[1];
-  vector<Parking>  parking_data = parse_parking_file(argv[2]);
+  vector<Parking> parking_data = parse_parking_file(argv[2]);
   const int delay = 1;
 
   // Open Camera or Video	File
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
   {
     string::size_type pAt = videoFilename.find_last_of('.');                  // Find extension point
     const string videoOutFilename = videoFilename.substr(0, pAt) + "_out.avi";   // Form the new name with container
-    int ex = static_cast<int>(cap.get(cv::CAP_PROP_FOURCC));     // Get Codec Type- Int form		
+    int ex = static_cast<int>(cap.get(cv::CAP_PROP_FOURCC));     // Get Codec Type- Int form
     //cv::VideoWriter::CV_FOURCC('C', 'R', 'A', 'M');
     outputVideo.open(videoOutFilename, -1, cap.get(cv::CAP_PROP_FPS), videoSize, true);
   }
@@ -115,7 +115,7 @@ int main(int argc, char** argv)
       cv::putText(frame_out, to_string(park.getId()), cv::Point(p.x + 1, p.y - 1), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(255, 255, 255), 2, cv::LINE_AA);
       cv::putText(frame_out, to_string(park.getId()), p, cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 2, cv::LINE_AA);
     }
-    // Text Overlay		
+    // Text Overlay
     oss.str("");
     oss << (unsigned long int)video_pos_frame << "/" << total_frames;
     cv::putText(frame_out, oss.str(), cv::Point(5, 30), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(0, 255, 255), 2, cv::LINE_AA);

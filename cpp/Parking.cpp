@@ -35,6 +35,11 @@ void Parking::setPoints(vector<cv::Point> points)
   contours_points = contours;
 }
 
+void Parking::setAngle(int a)
+{
+  angle = a;
+}
+
 vector<vector<cv::Point>> Parking::getContourPoints(void)
 {
   return contours_points;
