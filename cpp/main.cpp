@@ -182,11 +182,16 @@ int main(int argc, char** argv)
 
     if (frame.empty())
     {
-      printf("Error reading frame\n");
-      return -1;
+      cout << "Error reading frame" << endl;
+      // okay, use previous frame if present
+      if (!frame_out.empty()) {
+        frame = frame_out;
+      } else {
+        return -1;
+      }
+    } else {
+      frame_out = frame.clone();
     }
-
-    frame_out = frame.clone();
 
     if (findParkingPlaces) {
       detectAndDisplay(frame_out);
@@ -228,9 +233,9 @@ int main(int argc, char** argv)
       }
 
       double time = clock();
-      if (lastUpdateTime == 0 || time - lastUpdateTime > 1000) {
+      if (lastUpdateTime == 0 || time - lastUpdateTime > 100) {
         lastUpdateTime = time;
-        // deploy parking status every second?
+        // deploy parking status
         ofstream outputFile("parking.txt", ofstream::out | ofstream::trunc);
         for (Parking park : parking_data) {
           outputFile << park.getId() << " " << park.getStatus() << endl;
