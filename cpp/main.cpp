@@ -9,9 +9,66 @@
 #include "utils.h"
 #include "ConfigLoad.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 using namespace std;
 
-void fillParkingWithCars(vector<cv::Rect>& cars)
+#ifdef _WIN32
+cv::Mat hwnd2mat(HWND hwnd) 
+{
+  HDC hwindowDC, hwindowCompatibleDC;
+
+  int height, width, srcheight, srcwidth;
+  HBITMAP hbwindow;
+  cv::Mat src;
+  BITMAPINFOHEADER  bi;
+
+  hwindowDC = GetDC(hwnd);
+  hwindowCompatibleDC = CreateCompatibleDC(hwindowDC);
+  SetStretchBltMode(hwindowCompatibleDC, COLORONCOLOR);
+
+  RECT windowsize;    // get the height and width of the screen
+  GetClientRect(hwnd, &windowsize);
+
+  int srcTop = 100;
+  int srcLeft = 0;
+  srcheight = windowsize.bottom * 0.75;
+  srcwidth = windowsize.right / 2;
+  height = windowsize.bottom * 0.75;
+  width = windowsize.right / 2;
+
+  src.create(height, width, CV_8UC4);
+
+  // create a bitmap
+  hbwindow = CreateCompatibleBitmap(hwindowDC, width, height);
+  bi.biSize = sizeof(BITMAPINFOHEADER);    //http://msdn.microsoft.com/en-us/library/windows/window/dd183402%28v=vs.85%29.aspx
+  bi.biWidth = width;
+  bi.biHeight = -height;  //this is the line that makes it draw upside down or not
+  bi.biPlanes = 1;
+  bi.biBitCount = 32;
+  bi.biCompression = BI_RGB;
+  bi.biSizeImage = 0;
+  bi.biXPelsPerMeter = 0;
+  bi.biYPelsPerMeter = 0;
+  bi.biClrUsed = 0;
+  bi.biClrImportant = 0;
+
+  // use the previously created device context with the bitmap
+  SelectObject(hwindowCompatibleDC, hbwindow);
+  // copy from the window device context to the bitmap device context
+  StretchBlt(hwindowCompatibleDC, 0, 0, width, height, hwindowDC, srcLeft, srcTop, srcwidth, srcheight, SRCCOPY); //change SRCCOPY to NOTSRCCOPY for wacky colors !
+  GetDIBits(hwindowCompatibleDC, hbwindow, 0, height, src.data, (BITMAPINFO *)&bi, DIB_RGB_COLORS);  //copy from hwindowCompatibleDC to hbwindow
+
+                                                                                                     // avoid memory leak
+  DeleteObject(hbwindow); DeleteDC(hwindowCompatibleDC); ReleaseDC(hwnd, hwindowDC);
+
+  return src;
+}
+#endif
+
+void fillParkingWithCars(std::vector<cv::Rect>& cars)
 {
   ofstream outputFile("parkinglot_new.txt", ofstream::out | ofstream::trunc);
   int i = 0;
@@ -71,6 +128,12 @@ int main(int argc, char** argv)
   string argv3 = (argc > 3) ? argv[3] : "";
   bool findParkingPlaces = (argv3 == "-f");
 
+#ifdef _WIN32
+  bool screenCapture = (videoFilename == "screen");
+#else
+  bool screenCapture = false;
+#endif
+
   // Open Camera or Video	File
   cv::VideoCapture cap;
 
@@ -82,34 +145,13 @@ int main(int argc, char** argv)
       return -1;
     }
     cv::waitKey(500);
-  }
-  else
-  {
+  } else {
     cap.open(videoFilename);
-    //not sure what that commented code is all about
-    //cap.set(cv::CAP_PROP_POS_FRAMES, 60000); // jump to frame
   }
-  if (!cap.isOpened())
+  if (!cap.isOpened() && !screenCapture)
   {
     cout << "Could not open http or file stream: " << videoFilename << endl;
     return -1;
-  }
-
-  const unsigned long int total_frames = cap.get(cv::CAP_PROP_FRAME_COUNT);
-  cv::Size videoSize = cv::Size((int)cap.get(cv::CAP_PROP_FRAME_WIDTH),    // Acquire input size
-    (int)cap.get(cv::CAP_PROP_FRAME_HEIGHT));
-
-  cv::VideoWriter outputVideo;
-  if (ConfigLoad::options["SAVE_VIDEO"] == "true")
-  {
-    string::size_type pAt = videoFilename.find_last_of('.');                  // Find extension point
-    const string videoOutFilename = videoFilename.substr(0, pAt) + "_out.avi";   // Form the new name with container
-
-    //unused?
-    //int ex = static_cast<int>(cap.get(cv::CAP_PROP_FOURCC));     // Get Codec Type- Int form
-
-    //cv::VideoWriter::CV_FOURCC('C', 'R', 'A', 'M');
-    outputVideo.open(videoOutFilename, -1, cap.get(cv::CAP_PROP_FPS), videoSize, true);
   }
 
   // Initiliaze variables
@@ -120,18 +162,21 @@ int main(int argc, char** argv)
   cv::Size blur_kernel = cv::Size(5, 5);
   cv::namedWindow("Video", cv::WINDOW_AUTOSIZE);
   double lastUpdateTime = 0;
+  HWND hwndDesktop = GetDesktopWindow();
 
   // Loop through Video
-  while (cap.isOpened())
-  {
-    cap.read(frame);
+  while (true) {
+    if (screenCapture) {
+      frame = hwnd2mat(hwndDesktop);
+    } else {
+      cap.read(frame);
+    }
+
     if (frame.empty())
     {
       printf("Error reading frame\n");
       return -1;
     }
-
-    double video_pos_frame = cap.get(cv::CAP_PROP_POS_FRAMES);
 
     frame_out = frame.clone();
 
@@ -143,7 +188,7 @@ int main(int argc, char** argv)
 
       cout << ConfigLoad::options["DETECT_PARKING"] << endl;
 
-      if (ConfigLoad::options["DETECT_PARKING"] == "true")
+      if (ConfigLoad::options["DETECT_PARKING"] == "true" && !findParkingPlaces)
       {
         for (Parking& park : parking_data)
         {
@@ -185,17 +230,6 @@ int main(int argc, char** argv)
         outputFile.close();
       }
 
-      // Text Overlay
-      oss.str("");
-      oss << (unsigned long int)video_pos_frame << "/" << total_frames;
-      cv::putText(frame_out, oss.str(), cv::Point(5, 30), cv::FONT_HERSHEY_SIMPLEX
-                                      , 0.7, cv::Scalar(0, 255, 255), 2, cv::LINE_AA);
-
-      // Save Video
-      if (ConfigLoad::options["SAVE_VIDEO"] == "true")
-      {
-        outputVideo.write(frame_out);
-      }
       cv::imshow("Video", frame_out);
     }
 
