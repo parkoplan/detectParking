@@ -203,7 +203,7 @@ int main(int argc, char** argv)
   }
 
   // Initiliaze variables
-  cv::Mat frame, frame_blur, frame_gray, frame_out, roi, laplacian;
+  cv::Mat frame, frame_blur, frame_gray, frame_out, frame_copy, roi, laplacian;
   cv::Scalar delta, color;
   char c;  // Char from keyboard
   ostringstream oss;
@@ -232,13 +232,14 @@ int main(int argc, char** argv)
     {
       cout << "Error reading frame" << endl;
       // okay, use previous frame if present
-      if (!frame_out.empty()) {
-        frame = frame_out;
+      if (!frame_copy.empty()) {
+        frame = frame_copy.clone();
       } else {
         return -1;
       }
     } else {
       frame_out = frame.clone();
+      frame_copy = frame.clone();
     }
 
     if (findParkingPlaces) {
@@ -254,7 +255,7 @@ int main(int argc, char** argv)
         {
           // Check if parking is occupied
           roi = frame_blur(park.getBoundingRect());
-          cv::Laplacian(roi, laplacian, CV_64F);
+          cv::Laplacian(roi, laplacian, CV_64F, 1);
           delta = cv::mean(cv::abs(laplacian), park.getMask());
           park.setStatus(delta[0] < atof(ConfigLoad::options["PARK_LAPLACIAN_TH"].c_str()));
           printf("| %d: d=%-5.1f", park.getId(), delta[0]);
