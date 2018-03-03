@@ -162,12 +162,19 @@ int main(int argc, char** argv)
   cv::Size blur_kernel = cv::Size(5, 5);
   cv::namedWindow("Video", cv::WINDOW_AUTOSIZE);
   double lastUpdateTime = 0;
+
+#ifdef _WIN32
   HWND hwndDesktop = GetDesktopWindow();
+#endif
 
   // Loop through Video
   while (true) {
     if (screenCapture) {
+#ifdef _WIN32
       frame = hwnd2mat(hwndDesktop);
+#endif
+      cout << "screenCapture is unsupported on linux" << endl;
+      return 0;
     } else {
       cap.read(frame);
     }
