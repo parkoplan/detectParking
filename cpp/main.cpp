@@ -255,7 +255,7 @@ int main(int argc, char** argv)
       cv::cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
       cv::GaussianBlur(frame_gray, frame_blur, blur_kernel, 3, 3);
 
-      if (ConfigLoad::options["DETECT_PARKING"] == "true" && !findParkingPlaces)
+      if (!findParkingPlaces)
       {
         for (Parking& park : parking_data)
         {

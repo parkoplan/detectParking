@@ -10,7 +10,7 @@ This repository contains:
 Running
 -------
 
-`DetectParking.exe <Video_Filename or Camera_Number> <ParkingData_Filename>`
+`detect-parking <Video_Filename or Camera_Number> <ParkingData_Filename>`
 
 Where:
 - <Camera_Number> can be 0, 1, ... for webcam or usb camera.
@@ -29,27 +29,13 @@ Public IP cameras for testing
 Parameters
 ----------
 
-You can play with the threshold in `Parking.h`.
-
-```c++
-#define PARK_LAPLACIAN_TH 2
-```
-
-You can turn on/off the parking detection or saving output video in `main.cpp` by changing:
-
-```c++
-#define DETECT_PARKING true
-#define SAVE_VIDEO false
-```
+You can play with the threshold in `config.cfg`
 
 Building
 --------
 
-**Linux:** I compiled it on Raspbian (Debian) with GCC 4.9 using the following command:
-
-```g++ -Wall -g -std=c++11 `pkg-config --cflags --libs opencv` ./*.cpp -o ./detect-parking```
-
-**Windows:** Add the files to a Visual Studio solution. Add the OpenCV header and libraries files and build.
+ - CMake file in project root
+ - Meson build file in `cpp` folder
 
 Screenshots
 -----------

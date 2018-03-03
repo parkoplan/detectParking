@@ -8,18 +8,20 @@
 #include <functional>
 #include <cctype>
 #include <locale>
+#include <string>
 
 using namespace std;
 
 map<string, string> ConfigLoad::options;
 
-string ConfigLoad::trim(const string& str)
+string ConfigLoad::trim(string str)
 {
   size_t first = str.find_first_not_of(' ');
   if (string::npos == first)
   {
     return str;
   }
+  replace( str.begin(), str.end(), '\r', ' ');
   size_t last = str.find_last_not_of(' ');
   return str.substr(first, (last - first + 1));
 }
