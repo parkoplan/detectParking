@@ -80,8 +80,8 @@ void fillParkingWithCars(std::vector<cv::Rect>& cars)
   globalCount++;
   globalFoundCars.insert(globalFoundCars.begin(), cars.begin(), cars.end());
   if (globalCount > 10) {
-    cv::groupRectangles(globalFoundCars, 3, 0.2);
-    globalFoundCarsFiltered.insert(globalFoundCarsFiltered.end(), globalFoundCars.begin(), globalFoundCars.end());
+    globalFoundCarsFiltered.insert(globalFoundCarsFiltered.begin(), globalFoundCars.begin(), globalFoundCars.end());
+    cv::groupRectangles(globalFoundCarsFiltered, 3, 0.2);
     globalCount = 0;
     globalFoundCars.clear();
   }
