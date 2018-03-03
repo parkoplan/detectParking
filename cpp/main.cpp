@@ -68,11 +68,31 @@ cv::Mat hwnd2mat(HWND hwnd)
 }
 #endif
 
+std::vector<cv::Rect> globalFoundCars;
+std::vector<cv::Rect> globalFoundCarsFiltered;
+int globalCount = 0;
+
 void fillParkingWithCars(std::vector<cv::Rect>& cars)
 {
+  if (cars.empty()) {
+    return;
+  }
+  globalCount++;
+  globalFoundCars.insert(globalFoundCars.begin(), cars.begin(), cars.end());
+  if (globalCount > 10) {
+    globalFoundCarsFiltered.insert(globalFoundCarsFiltered.begin(), globalFoundCars.begin(), globalFoundCars.end());
+    cv::groupRectangles(globalFoundCarsFiltered, 3, 0.2);
+    globalCount = 0;
+    globalFoundCars.clear();
+  }
+
+  if (globalFoundCarsFiltered.empty()) {
+    return;
+  }
+
   ofstream outputFile("parkinglot_new.txt", ofstream::out | ofstream::trunc);
   int i = 0;
-  for (auto car : cars) {
+  for (auto car : globalFoundCarsFiltered) {
     outputFile << i++ << " " 
       << car.x << " " << car.y << " "
       << car.x + car.width << " " << car.y << " "
@@ -97,7 +117,7 @@ void detectAndDisplay(cv::Mat frame)
   cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
   equalizeHist(frame_gray, frame_gray);
   //-- Detect cars
-  cars_cascade.detectMultiScale(frame_gray, cars, 1.1, 2);
+  cars_cascade.detectMultiScale(frame_gray, cars, 1.1, 1);
   fillParkingWithCars(cars);
   for (size_t i = 0; i < cars.size(); i++) {
     cv::Point center(cars[i].x + cars[i].width / 2, cars[i].y + cars[i].height / 2);
