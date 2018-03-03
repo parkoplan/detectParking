@@ -132,7 +132,7 @@ void detectAndDisplay(cv::Mat frame)
   equalizeHist(frame_gray, frame_gray);
 
   //-- Detect cars
-  cars_cascade.detectMultiScale(frame_gray, cars, 1.0001, 3, 0, cvSize(smin,smin), cvSize(smax,smax));
+  cars_cascade.detectMultiScale(frame_gray, cars, 1.001, 1, 0, cvSize(smin,smin), cvSize(smax,smax));
   for (cv::Rect car : cars) {
     if ( (car.y > ymin && (ymax == 0 || car.y < ymax))
       && (car.x > xmin && (xmax == 0 || car.x < xmax)) ) {
@@ -234,6 +234,8 @@ int main(int argc, char** argv)
     }
 
     if (findParkingPlaces) {
+      // two times!
+      detectAndDisplay(frame_out);
       detectAndDisplay(frame_out);
     } else {
       cv::cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
