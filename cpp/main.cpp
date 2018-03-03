@@ -238,6 +238,12 @@ int main(int argc, char** argv)
         return -1;
       }
     } else {
+      if ( ConfigLoad::options.count("RESIZE_X")
+        || ConfigLoad::options.count("RESIZE_Y") ) {
+        int rx = getIntOption("RESIZE_X", 1200);
+        int ry = getIntOption("RESIZE_Y", 600);
+        cv::resize(frame, frame, cv::Size(rx, ry), 0, 0, cv::INTER_CUBIC);
+      }
       frame_out = frame.clone();
       frame_copy = frame.clone();
     }
