@@ -172,9 +172,10 @@ int main(int argc, char** argv)
     if (screenCapture) {
 #ifdef _WIN32
       frame = hwnd2mat(hwndDesktop);
-#endif
+#else
       cout << "screenCapture is unsupported on linux" << endl;
       return 0;
+#endif
     } else {
       cap.read(frame);
     }
