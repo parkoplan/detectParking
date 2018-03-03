@@ -112,17 +112,32 @@ void detectAndDisplay(cv::Mat frame)
   cv::CascadeClassifier cars_cascade; 
   cars_cascade.load("datasets/haarcascades/cars.xml");
 
-  vector<cv::Rect> cars;
+  auto getOption = [](const char* key) {
+    return (ConfigLoad::options.count(key))
+     ? atoi(ConfigLoad::options[key].c_str())
+     : 0;
+  };
+
+  int xmin = getOption("PARK_DETECTION_XMIN");
+  int xmax = getOption("PARK_DETECTION_XMAX");
+  int ymin = getOption("PARK_DETECTION_YMIN");
+  int ymax = getOption("PARK_DETECTION_YMAX");
+
+  vector<cv::Rect> cars, carsFiltered;
   cv::Mat frame_gray;
   cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
   equalizeHist(frame_gray, frame_gray);
   //-- Detect cars
   cars_cascade.detectMultiScale(frame_gray, cars, 1.1, 1);
-  fillParkingWithCars(cars);
-  for (size_t i = 0; i < cars.size(); i++) {
-    cv::Point center(cars[i].x + cars[i].width / 2, cars[i].y + cars[i].height / 2);
-    cv::ellipse(frame, center, cv::Size(cars[i].width / 2, cars[i].height / 2), 0, 0, 360, cv::Scalar(255, 0, 255), 4, 8, 0);
+  for (cv::Rect car : cars) {
+    if ( (car.y > ymin && (ymax == 0 || car.y < ymax))
+      && (car.x > xmin && (xmax == 0 || car.x < xmax)) ) {
+      cv::Point center(car.x + car.width / 2, car.y + car.height / 2);
+      cv::ellipse(frame, center, cv::Size(car.width / 2, car.height / 2), 0, 0, 360, cv::Scalar(255, 0, 255), 4, 8, 0);
+      carsFiltered.push_back(car);
+    }
   }
+  fillParkingWithCars(carsFiltered);
   //-- Show what you got
   cv::imshow("Video", frame);
 }
@@ -218,8 +233,6 @@ int main(int argc, char** argv)
     } else {
       cv::cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
       cv::GaussianBlur(frame_gray, frame_blur, blur_kernel, 3, 3);
-
-      cout << ConfigLoad::options["DETECT_PARKING"] << endl;
 
       if (ConfigLoad::options["DETECT_PARKING"] == "true" && !findParkingPlaces)
       {
