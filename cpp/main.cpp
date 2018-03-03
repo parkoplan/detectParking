@@ -132,7 +132,15 @@ void detectAndDisplay(cv::Mat frame)
   equalizeHist(frame_gray, frame_gray);
 
   //-- Detect cars
-  cars_cascade.detectMultiScale(frame_gray, cars, 1.001, 1, 0, cvSize(smin,smin), cvSize(smax,smax));
+  cars_cascade.detectMultiScale( frame_gray
+                               , cars
+                               , 1.001 // scale factor
+                               , 1
+                               , 0//|cv::CASCADE_DO_CANNY_PRUNING // no idea
+                                  //|cv::CASCADE_SCALE_IMAGE      // no idea
+                                    |cv::CASCADE_DO_ROUGH_SEARCH  // no idea
+                               , cvSize(smin,smin), cvSize(smax,smax));
+
   for (cv::Rect car : cars) {
     if ( (car.y > ymin && (ymax == 0 || car.y < ymax))
       && (car.x > xmin && (xmax == 0 || car.x < xmax)) ) {
@@ -234,7 +242,6 @@ int main(int argc, char** argv)
     }
 
     if (findParkingPlaces) {
-      // two times!
       detectAndDisplay(frame_out);
       detectAndDisplay(frame_out);
     } else {
