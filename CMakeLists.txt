@@ -16,5 +16,7 @@ set( HEADERS
   cpp/utils.h
 )
 
+find_package(Threads REQUIRED)
+
 add_executable( detect-parking ${SRC} ${HEADERS} )
-target_link_libraries( detect-parking ${OpenCV_LIBS} )
+target_link_libraries( detect-parking ${OpenCV_LIBS} Threads::Threads )

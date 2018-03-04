@@ -2,6 +2,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <future>
 
 #include <opencv2/opencv.hpp>
 
@@ -108,7 +109,7 @@ void fillParkingWithCars(std::vector<cv::Rect>& cars, cv::Mat frame)
   ofstream outputFile("parkinglot_new.txt", ofstream::out | ofstream::trunc);
   int i = 0;
   for (auto car : globalFoundCarsFilteredFinal) {
-    outputFile << i++ << " " 
+    outputFile << i++ << " "
       << car.x << " " << car.y << " "
       << car.x + car.width << " " << car.y << " "
       << car.x + car.width << " " << car.y + car.height << " "
@@ -165,8 +166,8 @@ void detectAndDisplay(cv::CascadeClassifier& cars_cascade, cv::Mat frame)
       }
     }
   }
-
   fillParkingWithCars(carsFiltered, frame);
+
   //-- Show what you got
   cv::imshow("Video", frame);
 }
@@ -278,13 +279,13 @@ int main(int argc, char** argv)
         for (Parking& park : parking_data)
         {
           // Check if parking is occupied
-          roi = frame_blur(park.getBoundingRect());
-          cv::Laplacian(roi, laplacian, CV_64F, 1);
-          delta = cv::mean(cv::abs(laplacian), park.getMask());
-          park.setStatus(delta[0] < atof(ConfigLoad::options["PARK_LAPLACIAN_TH"].c_str()));
-          printf("| %d: d=%-5.1f", park.getId(), delta[0]);
+          auto _check = async([&]() {
+            roi = frame_blur(park.getBoundingRect());
+            cv::Laplacian(roi, laplacian, CV_64F, 1);
+            delta = cv::mean(cv::abs(laplacian), park.getMask());
+            park.setStatus(delta[0] < atof(ConfigLoad::options["PARK_LAPLACIAN_TH"].c_str()));
+          });
         }
-        printf("\n");
       }
 
       // Parking Overlay
