@@ -14,6 +14,12 @@
 #include <Windows.h>
 #endif
 
+#ifdef _WIN32
+#define NULL_DEVICE "NUL:"
+#else
+#define NULL_DEVICE "/dev/null"
+#endif
+
 using namespace std;
 
 #ifdef _WIN32
@@ -183,6 +189,12 @@ int main(int argc, char** argv)
     return -1;
   }
 
+  std::stringstream errorStream;
+
+  //change the underlying buffer and save the old buffer
+  freopen(NULL_DEVICE, "w", stderr);
+  auto old_buf = std::cerr.rdbuf(errorStream.rdbuf());
+
   //Load configs
   ConfigLoad::parse();
 
@@ -327,6 +339,9 @@ int main(int argc, char** argv)
     // escape actually
     if (c == 27) break;
   }
+
+  std::cout.rdbuf(old_buf); //reset
+  //TODO: analyse errorStream
 
   return 0;
 }
