@@ -132,11 +132,8 @@ int getIntOption(const char* key, int def = 0)
    : def;
 }
 
-void detectAndDisplay(cv::Mat frame)
+void detectAndDisplay(cv::CascadeClassifier& cars_cascade, cv::Mat frame)
 {
-  cv::CascadeClassifier cars_cascade; 
-  cars_cascade.load("datasets/haarcascades/cars.xml");
-
   int xmin = getIntOption("PARK_DETECTION_XMIN");
   int xmax = getIntOption("PARK_DETECTION_XMAX");
   int ymin = getIntOption("PARK_DETECTION_YMIN");
@@ -150,22 +147,25 @@ void detectAndDisplay(cv::Mat frame)
   equalizeHist(frame_gray, frame_gray);
 
   //-- Detect cars
-  cars_cascade.detectMultiScale( frame_gray
-                               , cars
-                               , 1.001 // scale factor
-                               , 1
-                               , 0//|cv::CASCADE_DO_CANNY_PRUNING // no idea
-                                  //|cv::CASCADE_SCALE_IMAGE      // no idea
-                                    |cv::CASCADE_DO_ROUGH_SEARCH  // no idea
-                               , cvSize(smin,smin), cvSize(smax,smax));
+  for(int i = 0; i < 2; i++) {
+    cars_cascade.detectMultiScale( frame_gray
+                                 , cars
+                                 , 1.001 // scale factor
+                                 , 1
+                                 , 0//|cv::CASCADE_DO_CANNY_PRUNING // no idea
+                                    //|cv::CASCADE_SCALE_IMAGE      // no idea
+                                      |cv::CASCADE_DO_ROUGH_SEARCH  // no idea
+                                 , cvSize(smin,smin), cvSize(smax,smax));
 
-  for (cv::Rect car : cars) {
-    if ( (car.y > ymin && (ymax == 0 || car.y < ymax))
-      && (car.x > xmin && (xmax == 0 || car.x < xmax)) ) {
-      cv::rectangle(frame, car, cv::Scalar(255, 0, 255), 1, cv::LINE_AA);
-      carsFiltered.push_back(car);
+    for (cv::Rect car : cars) {
+      if ( (car.y > ymin && (ymax == 0 || car.y < ymax))
+        && (car.x > xmin && (xmax == 0 || car.x < xmax)) ) {
+        cv::rectangle(frame, car, cv::Scalar(255, 0, 255), 1, cv::LINE_AA);
+        carsFiltered.push_back(car);
+      }
     }
   }
+
   fillParkingWithCars(carsFiltered, frame);
   //-- Show what you got
   cv::imshow("Video", frame);
@@ -231,6 +231,9 @@ int main(int argc, char** argv)
   HWND hwndDesktop = GetDesktopWindow();
 #endif
 
+  cv::CascadeClassifier cars_cascade;
+  cars_cascade.load("datasets/haarcascades/cars.xml");
+
   // Loop through Video
   while (true) {
     if (screenCapture) {
@@ -265,8 +268,7 @@ int main(int argc, char** argv)
     }
 
     if (findParkingPlaces) {
-      detectAndDisplay(frame_out);
-      detectAndDisplay(frame_out);
+      detectAndDisplay(cars_cascade, frame_out);
     } else {
       cv::cvtColor(frame, frame_gray, cv::COLOR_BGR2GRAY);
       cv::GaussianBlur(frame_gray, frame_blur, blur_kernel, 3, 3);
