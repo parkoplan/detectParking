@@ -70,6 +70,7 @@ cv::Mat hwnd2mat(HWND hwnd)
 
 std::vector<cv::Rect> globalFoundCars;
 std::vector<cv::Rect> globalFoundCarsFiltered;
+std::vector<cv::Rect> globalFoundCarsFilteredFinal;
 int globalCount = 0;
 
 void fillParkingWithCars(std::vector<cv::Rect>& cars, cv::Mat frame)
@@ -83,7 +84,9 @@ void fillParkingWithCars(std::vector<cv::Rect>& cars, cv::Mat frame)
     cv::groupRectangles(globalFoundCars, 3, 0.5);    
     globalFoundCarsFiltered.insert(globalFoundCarsFiltered.end(), globalFoundCars.begin(), globalFoundCars.end());
     if (globalCount % 30 == 0) {
-      cv::groupRectangles(globalFoundCarsFiltered, 1, 0.5);
+      cv::groupRectangles(globalFoundCarsFiltered, 1, 0.4);
+      globalFoundCarsFilteredFinal.clear();
+      globalFoundCarsFilteredFinal.insert(globalFoundCarsFilteredFinal.end(), globalFoundCarsFiltered.begin(), globalFoundCarsFiltered.end());
     }
     globalFoundCars.clear();
   }
@@ -92,9 +95,15 @@ void fillParkingWithCars(std::vector<cv::Rect>& cars, cv::Mat frame)
     return;
   }
 
+  for (auto car : globalFoundCarsFiltered) {
+    cv::Scalar color = cv::Scalar(255, 0, 0);
+    cv::rectangle(frame, car, color, 1, cv::LINE_AA);
+  }
+
+
   ofstream outputFile("parkinglot_new.txt", ofstream::out | ofstream::trunc);
   int i = 0;
-  for (auto car : globalFoundCarsFiltered) {
+  for (auto car : globalFoundCarsFilteredFinal) {
     outputFile << i++ << " " 
       << car.x << " " << car.y << " "
       << car.x + car.width << " " << car.y << " "
@@ -105,7 +114,7 @@ void fillParkingWithCars(std::vector<cv::Rect>& cars, cv::Mat frame)
       << "0"
       << endl;
 
-    cv::Scalar color = cv::Scalar(255, 0, 0);
+    cv::Scalar color = cv::Scalar(0, 255, 0);
     cv::rectangle(frame, car, color, 2, cv::LINE_AA);
   }
   outputFile.close();
