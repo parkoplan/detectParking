@@ -72,17 +72,19 @@ std::vector<cv::Rect> globalFoundCars;
 std::vector<cv::Rect> globalFoundCarsFiltered;
 int globalCount = 0;
 
-void fillParkingWithCars(std::vector<cv::Rect>& cars)
+void fillParkingWithCars(std::vector<cv::Rect>& cars, cv::Mat frame)
 {
   if (cars.empty()) {
     return;
   }
   globalCount++;
   globalFoundCars.insert(globalFoundCars.begin(), cars.begin(), cars.end());
-  if (globalCount > 10) {
-    globalFoundCarsFiltered.insert(globalFoundCarsFiltered.begin(), globalFoundCars.begin(), globalFoundCars.end());
-    cv::groupRectangles(globalFoundCarsFiltered, 3, 0.2);
-    globalCount = 0;
+  if (globalCount % 10 == 0) {
+    cv::groupRectangles(globalFoundCars, 3, 0.5);    
+    globalFoundCarsFiltered.insert(globalFoundCarsFiltered.end(), globalFoundCars.begin(), globalFoundCars.end());
+    if (globalCount % 30 == 0) {
+      cv::groupRectangles(globalFoundCarsFiltered, 1, 0.5);
+    }
     globalFoundCars.clear();
   }
 
@@ -102,6 +104,9 @@ void fillParkingWithCars(std::vector<cv::Rect>& cars)
       << car.y + car.height / 2 << " "
       << "0"
       << endl;
+
+    cv::Scalar color = cv::Scalar(255, 0, 0);
+    cv::rectangle(frame, car, color, 2, cv::LINE_AA);
   }
   outputFile.close();
 
@@ -144,13 +149,11 @@ void detectAndDisplay(cv::Mat frame)
   for (cv::Rect car : cars) {
     if ( (car.y > ymin && (ymax == 0 || car.y < ymax))
       && (car.x > xmin && (xmax == 0 || car.x < xmax)) ) {
-      cv::Point center(car.x + car.width / 2, car.y + car.height / 2);
-      cv::ellipse(frame, center, cv::Size(car.width / 2, car.height / 2), 0, 0, 360
-                               , cv::Scalar(255, 0, 255), 4, 8, 0);
+      cv::rectangle(frame, car, cv::Scalar(255, 0, 255), 1, cv::LINE_AA);
       carsFiltered.push_back(car);
     }
   }
-  fillParkingWithCars(carsFiltered);
+  fillParkingWithCars(carsFiltered, frame);
   //-- Show what you got
   cv::imshow("Video", frame);
 }
