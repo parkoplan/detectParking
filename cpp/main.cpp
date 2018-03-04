@@ -284,8 +284,10 @@ int main(int argc, char** argv)
             cv::Laplacian(roi, laplacian, CV_64F, 1);
             delta = cv::mean(cv::abs(laplacian), park.getMask());
             park.setStatus(delta[0] < atof(ConfigLoad::options["PARK_LAPLACIAN_TH"].c_str()));
+            printf("| %d: d=%-5.1f", park.getId(), delta[0]);
           });
         }
+        printf("\n");
       }
 
       // Parking Overlay
