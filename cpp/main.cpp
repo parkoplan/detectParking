@@ -83,7 +83,11 @@ void fillParkingWithCars(std::vector<cv::Rect>& cars, cv::Mat frame)
   if (globalCount % 10 == 0) {
     cv::groupRectangles(globalFoundCars, 3, 0.5);    
     globalFoundCarsFiltered.insert(globalFoundCarsFiltered.end(), globalFoundCars.begin(), globalFoundCars.end());
-    if (globalCount % 30 == 0) {
+    if (globalCount % 50 == 0) {
+      // Make sure that final cars will live
+      globalFoundCarsFiltered.insert(globalFoundCarsFiltered.end(), globalFoundCarsFilteredFinal.begin(), globalFoundCarsFilteredFinal.end());
+      globalFoundCarsFiltered.insert(globalFoundCarsFiltered.end(), globalFoundCarsFilteredFinal.begin(), globalFoundCarsFilteredFinal.end());
+
       cv::groupRectangles(globalFoundCarsFiltered, 1, 0.4);
       globalFoundCarsFilteredFinal.clear();
       globalFoundCarsFilteredFinal.insert(globalFoundCarsFilteredFinal.end(), globalFoundCarsFiltered.begin(), globalFoundCarsFiltered.end());
